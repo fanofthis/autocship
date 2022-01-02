@@ -41,8 +41,8 @@ def get_headers(token: str) -> Dict[str, str]:
 
 
 def refuel_ship(accounts: list) -> None:
+    print('========================##=====================##=====================')
     for account in accounts:
-        print('*********************************************')
         headers = get_headers(account['token'])
         url = "https://play1-api.cryptoships.club/api/ships/refuel"
         res = requests.get(url, headers=headers)
@@ -66,7 +66,7 @@ def get_ships(headers):
 def racing_ships(accounts: list):
     url = "https://play1-api.cryptoships.club/api/ships/racing/"
     for account in accounts:
-        print('*********************************************')
+        print('========================##=====================##=====================')
         print('Start racing {} - {}'.format(account['name'], account['address']))
         headers = get_headers(account['token'])
         ships = get_ships(headers)
@@ -98,7 +98,7 @@ def claim_reward(accounts: list, ndays=4):
     url = "https://play1-api.cryptoships.club/api/ship-histories/training/"
     curr = datetime.now()
     for account in accounts:
-        print('*********************************************')
+        print('========================##=====================##=====================')
         print('Start claim {} - {}'.format(account['name'], account['address']))
         headers = get_headers(account['token'])
         ships = get_ships(headers)
