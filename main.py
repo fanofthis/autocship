@@ -5,26 +5,28 @@ import time
 from datetime import datetime, timedelta
 
 
-def check_claimable(records, end_from):
+def check_claimable(records):
     for record in records:
         if record['isClaim'] == 'false':
-            date_race = datetime.strptime(record['time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            if date_race <= end_from:
+            date_race = datetime.strptime(
+                record['time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            if date_race <= datetime.utcnow() - timedelta(days=5):
                 return True
     return False
 
 
-def claim(headers, ship_id, records, start_from, end_from):
+def claim(headers, ship_id, records, start_from):
     base_url = 'https://play1-api.cryptoships.club/api/ship-histories/claim/'
     params = {'time': start_from}
-    if check_claimable(records, end_from):
+    if check_claimable(records):
         res = requests.get(base_url + ship_id, params=params, headers=headers)
         if res.status_code == 200:
-            print(f"Claim success on {start_from}. Balance is {res.json()['cship']}")
+            print(
+                f"Claim success on {start_from}. Balance is {res.json()['cship']}")
         else:
             print('Something error: {}'.format(res.text))
     else:
-        print(f'Nothing to claim on {start_from}.')
+        print(f'All racing claimed or no timing claim on {start_from}.')
 
 
 def read_acc_info() -> Dict[str, str]:
@@ -47,7 +49,8 @@ def refuel_ship(accounts: list) -> None:
         url = "https://play1-api.cryptoships.club/api/ships/refuel"
         res = requests.get(url, headers=headers)
         if res.status_code == 200:
-            print('Refuel account %s | %s successful.' % (account['name'], account['address']))
+            print('Refuel account %s | %s successful.' %
+                  (account['name'], account['address']))
         else:
             print("Can't refuel account {0} | {1} : {2}".format(account['name'], account['address'],
                                                                 res.json()['message']))
@@ -67,7 +70,8 @@ def racing_ships(accounts: list):
     url = "https://play1-api.cryptoships.club/api/ships/racing/"
     for account in accounts:
         print('========================##=====================##=====================')
-        print('Start racing {} - {}'.format(account['name'], account['address']))
+        print(
+            'Start racing {} - {}'.format(account['name'], account['address']))
         headers = get_headers(account['token'])
         ships = get_ships(headers)
         total_rewards = 0
@@ -79,7 +83,7 @@ def racing_ships(accounts: list):
                 if res.status_code == 200:
                     data = res.json()
                     oil -= 15
-                    print(f"{ship['name']} {data['ship']} | Position {data['position']} | " \
+                    print(f"{ship['name']} {data['ship']} | Position {data['position']} | "
                           f"{data['reward']} tokens | {data['exp']} exp.")
                     total_rewards += float(data['reward'])
                     num_races += 1
@@ -99,20 +103,27 @@ def claim_reward(accounts: list, ndays=4):
     curr = datetime.now()
     for account in accounts:
         print('========================##=====================##=====================')
-        print('Start claim {} - {}'.format(account['name'], account['address']))
+        print(
+            'Start claim {} - {}'.format(account['name'], account['address']))
         headers = get_headers(account['token'])
         ships = get_ships(headers)
         for ship in ships:
             end_from = curr - timedelta(days=5)
             start_from = curr - timedelta(days=5 + ndays)
-            print(f"Start claim {ship['name']} {ship['uid']} between {start_from.strftime('%Y-%m-%d')} and {end_from.strftime('%Y-%m-%d')}")
+            print(
+                f"Start claim {ship['name']} {ship['uid']} between {start_from.strftime('%Y-%m-%d')} and {end_from.strftime('%Y-%m-%d')}")
             while start_from <= end_from:
                 params = {'time': start_from.strftime("%Y-%m-%d")}
-                res = requests.get(url + ship['id'], headers=headers, params=params)
+                res = requests.get(
+                    url + ship['id'], headers=headers, params=params)
                 if res.status_code == 200:
                     records = res.json()
                     if len(records) > 0:
-                        claim(headers, ship['id'], records, start_from, end_from)
+                        claim(headers, ship['id'], records,
+                              start_from.strftime("%Y-%m-%d"))
+                    else:
+                        print(
+                            f'No racing on {start_from.strftime("%Y-%m-%d")}')
                 else:
                     print('Something went wrong: {}'.format(res.text))
                 start_from += timedelta(days=1)
@@ -131,4 +142,3 @@ if __name__ == "__main__":
     #     ships = get_ships(headers)  # fetch all ships
     #     racing_ships(headers, ships)  # racing
     #     claim_reward(headers, ships)  # claim all reward with 0% tax
-
