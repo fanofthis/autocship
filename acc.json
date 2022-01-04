@@ -1,9 +1,0 @@
-{
-    "Accounts": [
-        {
-            "name": "Account 5",
-            "address": "0x58405C6A1fC3695636625139dd4685116d357e82",
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxYzFmMDMwZjY5ZmVhMzA1ZmY2MzkzMyIsIm5vbmNlIjo3ODcxLCJ3YWxsZXRBZGRyZXNzIjoiMHg1ODQwNWM2YTFmYzM2OTU2MzY2MjUxMzlkZDQ2ODUxMTZkMzU3ZTgyIiwicm9sZSI6InVzZXIiLCJjc2hpcCI6NzcuNSwiaXNBY3RpdmUiOnRydWUsImlhdCI6MTY0MDk2MDAzMH0.g6luQuCm3cB2TTKa_guVhMENW-0KVA685Ts8ozHkUSQ"
-        }
-    ]
-}
