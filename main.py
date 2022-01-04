@@ -2,31 +2,50 @@ import json
 from typing import Dict
 import requests
 import time
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+
+
+MAX_TAX_CLAIM = 20
+MAX_TAX = 50
+STEP_TAX = 10
+
+
+def get_tax_claim(date_race: datetime) -> int:
+    diff_date = (datetime.utcnow().date() - date_race.date()).days
+    if diff_date != 5:
+        tax = MAX_TAX - diff_date * STEP_TAX if MAX_TAX >= diff_date * STEP_TAX else 0
+    elif date_race <= datetime.utcnow() - timedelta(days=5):
+        tax = 0
+    else:
+        tax = None
+    return tax
 
 
 def check_claimable(records):
-    for record in records:
-        if record['isClaim'] == 'false':
-            date_race = datetime.strptime(
-                record['time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            if date_race <= datetime.utcnow() - timedelta(days=5):
-                return True
+    record = records[0]
+    if record['isClaim'] == 'false':
+        date_race = datetime.strptime(
+            record['time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        # print('Tax claim will be: {}%.'.format(get_tax_claim(date_race)))
+        if get_tax_claim(date_race) is not None:
+            return True
     return False
 
 
 def claim(headers, ship_id, records, start_from):
     base_url = 'https://play1-api.cryptoships.club/api/ship-histories/claim/'
     params = {'time': start_from}
+    print('Start claim on {}'.format(start_from))
     if check_claimable(records):
         res = requests.get(base_url + ship_id, params=params, headers=headers)
         if res.status_code == 200:
-            print(
-                f"Claim success on {start_from}. Balance is {res.json()['cship']}")
+            #print(f"Claim success on {start_from}. Balance is {res.json()['cship']}")
+            print("Claim successful. Balance is {}".format(
+                res.json()['cship']))
         else:
             print('Something error: {}'.format(res.text))
     else:
-        print(f'All racing claimed or no timing claim on {start_from}.')
+        print('All racing claimed or no timing claim.')
 
 
 def read_acc_info() -> Dict[str, str]:
@@ -108,10 +127,13 @@ def claim_reward(accounts: list, ndays=4):
         headers = get_headers(account['token'])
         ships = get_ships(headers)
         for ship in ships:
-            end_from = curr - timedelta(days=5)
+            # print(5 - MAX_TAX_CLAIM/10)
+            end_from = curr - timedelta(days=(5-MAX_TAX_CLAIM/10))
+            # continue
             start_from = curr - timedelta(days=5 + ndays)
             print(
-                f"Start claim {ship['name']} {ship['uid']} between {start_from.strftime('%Y-%m-%d')} and {end_from.strftime('%Y-%m-%d')}")
+                f"Start claim {ship['name']} {ship['uid']} between {start_from.strftime('%Y-%m-%d')} "
+                f"and {end_from.strftime('%Y-%m-%d')}")
             while start_from <= end_from:
                 params = {'time': start_from.strftime("%Y-%m-%d")}
                 res = requests.get(
