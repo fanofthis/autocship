@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 #  MAX_TAX_CLAIM = 10
 MAX_TAX = 50
 STEP_TAX = 10
-DEPLAY_PER_RACE = 15
+DEPLAY_PER_RACE = 20
 
 
 def get_tax_claim(date_race: datetime) -> int:
@@ -130,7 +130,7 @@ def claim_reward(accounts: list, ndays=1):
         for ship in ships:
             # print(5 - MAX_TAX_CLAIM/10)
             print(account['tax_claim'])
-            end_from = curr - timedelta(days=(5-account['tax_rate']/10))
+            end_from = curr - timedelta(days=(5-account['tax_claim']/10))
             # continue
             start_from = curr - timedelta(days=5 + ndays)
             print(
