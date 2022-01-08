@@ -5,9 +5,10 @@ import time
 from datetime import date, datetime, timedelta
 
 
-MAX_TAX_CLAIM = 20
+#  MAX_TAX_CLAIM = 10
 MAX_TAX = 50
 STEP_TAX = 10
+DEPLAY_PER_RACE = 15
 
 
 def get_tax_claim(date_race: datetime) -> int:
@@ -17,22 +18,22 @@ def get_tax_claim(date_race: datetime) -> int:
     elif date_race <= datetime.utcnow() - timedelta(days=5):
         tax = 0
     else:
-        tax = None
+        tax = -1
     return tax
 
 
-def check_claimable(records):
+def check_claimable(records: list) -> bool:
     record = records[0]
     if record['isClaim'] == 'false':
         date_race = datetime.strptime(
             record['time'], "%Y-%m-%dT%H:%M:%S.%fZ")
         # print('Tax claim will be: {}%.'.format(get_tax_claim(date_race)))
-        if get_tax_claim(date_race) is not None:
+        if get_tax_claim(date_race) != -1:
             return True
     return False
 
 
-def claim(headers, ship_id, records, start_from):
+def claim(headers: dict, ship_id: str, records: list, start_from: str) -> None:
     base_url = 'https://play1-api.cryptoships.club/api/ship-histories/claim/'
     params = {'time': start_from}
     print('Start claim on {}'.format(start_from))
@@ -75,7 +76,7 @@ def refuel_ship(accounts: list) -> None:
                                                                 res.json()['message']))
 
 
-def get_ships(headers):
+def get_ships(headers: dict):
     url = "https://play1-api.cryptoships.club/api/ships/me"
     res = requests.get(url, headers=headers)
     if res.status_code == 200:
@@ -106,10 +107,10 @@ def racing_ships(accounts: list):
                           f"{data['reward']} tokens | {data['exp']} exp.")
                     total_rewards += float(data['reward'])
                     num_races += 1
-                    time.sleep(15)
+                    time.sleep(DEPLAY_PER_RACE)
                 else:
                     print('Something went wrong: {0}'.format(res.text))
-                    time.sleep(15)
+                    time.sleep(DEPLAY_PER_RACE)
         if total_rewards > 0:
             print(f"Total reward {account['name']} is {total_rewards} token. "
                   f"Average reward is {total_rewards/num_races}")
@@ -117,7 +118,7 @@ def racing_ships(accounts: list):
             print('{} no ship available to race.'.format(account['name']))
 
 
-def claim_reward(accounts: list, ndays=4):
+def claim_reward(accounts: list, ndays=1):
     url = "https://play1-api.cryptoships.club/api/ship-histories/training/"
     curr = datetime.now()
     for account in accounts:
@@ -128,7 +129,8 @@ def claim_reward(accounts: list, ndays=4):
         ships = get_ships(headers)
         for ship in ships:
             # print(5 - MAX_TAX_CLAIM/10)
-            end_from = curr - timedelta(days=(5-MAX_TAX_CLAIM/10))
+            print(account['tax_claim'])
+            end_from = curr - timedelta(days=(5-account['tax_rate']/10))
             # continue
             start_from = curr - timedelta(days=5 + ndays)
             print(
