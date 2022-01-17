@@ -13,38 +13,37 @@ MAX_TAX = 50
 STEP_TAX = 10
 
 
-def claim_reward(accounts: list, ndays=1):
+def claim_reward(account, ndays=1):
     url = "https://play1-api.cryptoships.club/api/ship-histories/training/"
     curr = datetime.now()
-    for account in accounts:
-        print('========================##=====================##=====================')
+    print('========================##=====================##=====================')
+    print(
+        'Start claim {} - {}'.format(account['name'], account['address']))
+    headers = get_headers(account['token'])
+    ships = get_ships_info(account['token'])
+    for ship in ships:
+        # print(5 - MAX_TAX_CLAIM/10)
+        end_from = curr - timedelta(days=(5-account['tax_claim']/10))
+        # continue
+        start_from = curr - timedelta(days=5 + ndays)
         print(
-            'Start claim {} - {}'.format(account['name'], account['address']))
-        headers = get_headers(account['token'])
-        ships = get_ships_info(headers)
-        for ship in ships:
-            # print(5 - MAX_TAX_CLAIM/10)
-            end_from = curr - timedelta(days=(5-account['tax_claim']/10))
-            # continue
-            start_from = curr - timedelta(days=5 + ndays)
-            print(
-                f"Start claim {ship['name']} {ship['uid']} between {start_from.strftime('%Y-%m-%d')} "
-                f"and {end_from.strftime('%Y-%m-%d')}")
-            while start_from <= end_from:
-                params = {'time': start_from.strftime("%Y-%m-%d")}
-                res = requests.get(
-                    url + ship['id'], headers=headers, params=params)
-                if res.status_code == 200:
-                    records = res.json()
-                    if len(records) > 0:
-                        claim(headers, ship['id'], records,
-                              start_from.strftime("%Y-%m-%d"))
-                    else:
-                        print(
-                            f'No racing on {start_from.strftime("%Y-%m-%d")}')
+            f"Start claim {account['name']}-{ship['name']} {ship['uid']} between {start_from.strftime('%Y-%m-%d')} "
+            f"and {end_from.strftime('%Y-%m-%d')}")
+        while start_from <= end_from:
+            params = {'time': start_from.strftime("%Y-%m-%d")}
+            res = requests.get(
+                url + ship['id'], headers=headers, params=params)
+            if res.status_code == 200:
+                records = res.json()
+                if len(records) > 0:
+                    claim(headers, account['name'], ship['id'], records,
+                            start_from.strftime("%Y-%m-%d"))
                 else:
-                    print('Something went wrong: {}'.format(res.text))
-                start_from += timedelta(days=1)
+                    print(
+                        f'No racing on {start_from.strftime("%Y-%m-%d")}')
+            else:
+                print('Something went wrong: {}'.format(res.text))
+            start_from += timedelta(days=1)
 
 
 def get_tax_claim(date_race: datetime) -> int:
@@ -69,7 +68,7 @@ def check_claimable(records: list) -> bool:
     return False
 
 
-def claim(headers: dict, ship_id: str, records: list, start_from: str) -> None:
+def claim(headers: dict, account_name: str, ship_id: str, records: list, start_from: str) -> None:
     base_url = 'https://play1-api.cryptoships.club/api/ship-histories/claim/'
     params = {'time': start_from}
     print('Start claim on {}'.format(start_from))
@@ -77,7 +76,7 @@ def claim(headers: dict, ship_id: str, records: list, start_from: str) -> None:
         res = requests.get(base_url + ship_id, params=params, headers=headers)
         if res.status_code == 200:
             #print(f"Claim success on {start_from}. Balance is {res.json()['cship']}")
-            print("Claim successful. Balance is {}".format(
+            print("Claim successful. {} Balance {} is {}".format(account_name,
                 res.json()['cship']))
         else:
             print('Something error: {}'.format(res.text))

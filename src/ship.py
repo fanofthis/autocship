@@ -1,10 +1,13 @@
-import requests
+from re import T
+from .client import Client
 
-def get_ships_info(headers: dict):
+def get_ships_info(token):
     url = "https://play1-api.cryptoships.club/api/ships/me"
-    res = requests.get(url, headers=headers)
-    if res.status_code == 200:
-        return res.json()
+    client = Client(token)
+    res = client.request(url)
+    if res[0] == 200:
+        return res[1]
     else:
-        print('Something went wrong: {0}'.format(res.text))
+        print(f'Something went wrong: {res}')
         return None
+

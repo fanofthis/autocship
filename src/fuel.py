@@ -1,16 +1,11 @@
-from .info import get_headers
-import requests
+from .client import Client
 
 
-def refuel_ship(accounts: list) -> None:
-    print('========================##=====================##=====================')
-    for account in accounts:
-        headers = get_headers(account['token'])
-        url = "https://play1-api.cryptoships.club/api/ships/refuel"
-        res = requests.get(url, headers=headers)
-        if res.status_code == 200:
-            print('Refuel account %s | %s successful.' %
-                  (account['name'], account['address']))
-        else:
-            print("Can't refuel account {0} | {1} : {2}".format(account['name'], account['address'],
-                                                                res.json()['message']))
+def refuel_ships(account: dict) -> None:
+    url = "https://play1-api.cryptoships.club/api/ships/refuel"
+    client = Client(account['token'])
+    res = client.request(url)
+    if res[0] == 200:
+        print('Refuel account %s | %s successful.' % (account['name'], account['address']))
+    else:
+        print('Something went wrong: status_code {}, {}'.format(res[0], res[1]))
