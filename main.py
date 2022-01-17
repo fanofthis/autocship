@@ -5,7 +5,7 @@ from multiprocessing import freeze_support
 def main():
     print('Starting run main code')
     accounts = read_acc_info()
-    n_processors = 5
+    n_processors = len(accounts)
     run_multiprocessing(refuel_ships, accounts, n_processors)
     run_multiprocessing(racing_ships, accounts, n_processors)
     run_multiprocessing(claim_reward, accounts, n_processors)
