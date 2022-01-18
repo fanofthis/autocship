@@ -19,22 +19,28 @@ def racing_ships(account: dict):
         total_rewards = 0
         num_races = 0
         for ship in ships:
+            total_rewards_ship = 0
+            ship_raced = 0
             oil = ship['oil']
             while oil > 0:
-                res = client.request(url)
+                res = client.request(url + ship['id'])
                 if res[0] == 200:
                     data = res[1]
                     oil -= 15
-                    print(f"{account['name']}-{ship['name']} {data['ship']} | Position {data['position']} | "
+                    print(f"- {account['name']}-{ship['name']} {data['ship']} | Position {data['position']} | "
                             f"{data['reward']} tokens | {data['exp']} exp.")
+                    total_rewards_ship += float(data['reward'])
                     total_rewards += float(data['reward'])
+                    ship_raced += 1
                     num_races += 1
                     time.sleep(DEPLAY_PER_RACE)
                 else:
                     print('Something went wrong: {0}'.format(res))
                     time.sleep(DEPLAY_PER_RACE)
+            if ship_raced > 0:
+                print(f"# {account['name']} -{ ship['name']}: Total rewards {total_rewards_ship} tokens - AVG {total_rewards_ship/ship_raced} tokens.")
         if total_rewards > 0:
-            print(f"Total reward {account['name']} is {total_rewards} token. "
+            print(f"# Total reward {account['name']} is {total_rewards} token. "
                     f"Average reward is {total_rewards/num_races}")
         if num_races == 0:
             print('{}-There are no ships available to race.'.format(account['name']))

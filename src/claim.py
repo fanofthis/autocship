@@ -40,7 +40,7 @@ def claim_reward(account, ndays=1):
                             start_from.strftime("%Y-%m-%d"))
                 else:
                     print(
-                        f'No racing on {start_from.strftime("%Y-%m-%d")}')
+                        f'# No racing on {start_from.strftime("%Y-%m-%d")}')
             else:
                 print('Something went wrong: {}'.format(res.text))
             start_from += timedelta(days=1)
@@ -71,14 +71,14 @@ def check_claimable(records: list) -> bool:
 def claim(headers: dict, account_name: str, ship_id: str, records: list, start_from: str) -> None:
     base_url = 'https://play1-api.cryptoships.club/api/ship-histories/claim/'
     params = {'time': start_from}
-    print('Start claim on {}'.format(start_from))
+    print('- Start claim on {}'.format(start_from))
     if check_claimable(records):
         res = requests.get(base_url + ship_id, params=params, headers=headers)
         if res.status_code == 200:
             #print(f"Claim success on {start_from}. Balance is {res.json()['cship']}")
-            print("Claim successful. {} Balance {} is {}".format(account_name,
+            print("- Claim successful. {} Balance {} is {}".format(account_name,
                 res.json()['cship']))
         else:
             print('Something error: {}'.format(res.text))
     else:
-        print('All racing claimed or no timing claim.')
+        print('# All racing claimed or no timing claim.')
