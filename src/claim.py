@@ -76,7 +76,7 @@ def claim(headers: dict, account_name: str, ship_id: str, records: list, start_f
         res = requests.get(base_url + ship_id, params=params, headers=headers)
         if res.status_code == 200:
             #print(f"Claim success on {start_from}. Balance is {res.json()['cship']}")
-            print("- Claim successful. {} Balance {} is {}".format(account_name,
+            print("- Claim successful. Balance {} is {}".format(account_name,
                 res.json()['cship']))
         else:
             print('Something error: {}'.format(res.text))
